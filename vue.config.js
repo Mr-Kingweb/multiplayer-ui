@@ -1,6 +1,5 @@
-const {
-  defineConfig
-} = require('@vue/cli-service')
+const { defineConfig } = require('@vue/cli-service')
+
 module.exports = defineConfig({
   transpileDependencies: true,
   devServer: {
@@ -13,8 +12,16 @@ module.exports = defineConfig({
         pathRewrite: {
           '^/api': '' // 去掉请求路径中的 '/api' 前缀
         }
-        
       }
     }
-  }
+  },
+  css: {
+    loaderOptions: {
+      less: {
+        lessOptions: {
+          javascriptEnabled: true,
+        },
+      },
+    },
+  },
 })

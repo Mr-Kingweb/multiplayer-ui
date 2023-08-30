@@ -176,7 +176,7 @@
                 fixed
                 prop="orderNumber"
                 label="订单单号"
-                width="300px"
+                width="220px"
               >
                 <template #default="scope">
                   <el-input
@@ -190,12 +190,12 @@
                 sortable
                 prop="customerNumber"
                 label="客户号"
-                width="180px"
+                width="100px"
               >
                 <template #default="scope">
                   <el-input
                     v-model="scope.row.customerNumber"
-                    placeholder="请输入客户号"
+                    placeholder="客户号"
                   ></el-input>
                 </template>
               </el-table-column>
@@ -203,7 +203,7 @@
                 show-overflow-tooltip="true"
                 prop="brand"
                 label="品名"
-                width="350px"
+                width="250px"
                 ><template #default="scope">
                   <el-input
                     v-model="scope.row.brand"
@@ -216,6 +216,7 @@
                 sortable
                 prop="quantity"
                 label="数量"
+                width="88px"
                 ><template #default="scope">
                   <el-input
                     v-model="scope.row.quantity"
@@ -224,32 +225,10 @@
               ></el-table-column>
               <el-table-column
                 show-overflow-tooltip="true"
-                prop="specification"
-                label="规格"
-                width="350px"
-                ><template #default="scope">
-                  <el-input
-                    v-model="scope.row.specification"
-                    placeholder="请输入规格"
-                  ></el-input> </template
-              ></el-table-column>
-              <el-table-column
-                show-overflow-tooltip="true"
-                prop="remark"
-                label="备注"
-                width="150px"
-                ><template #default="scope">
-                  <el-input
-                    v-model="scope.row.remark"
-                    placeholder="请输入备注"
-                  ></el-input> </template
-              ></el-table-column>
-              <el-table-column
-                show-overflow-tooltip="true"
                 sortable
                 prop="tableNumber"
                 label="表号"
-                width="300px"
+                width="220px"
                 ><template #default="scope">
                   <el-input
                     v-model="scope.row.tableNumber"
@@ -263,20 +242,24 @@
                 sortable
                 prop="boxOrWorkerNumber"
                 label="箱号/工号"
-                width="300px"
+                width="220px"
                 ><template #default="scope">
                   <el-input
                     v-model="scope.row.boxOrWorkerNumber"
                     placeholder="请输入箱号/工号"
+                    ref="boxOrWorkerInput"
+                    @mousedown.left="startDragLeft(scope)"
+                    @keyup.down="startDragMiddle(scope)"
+                    @mousemove="handleDrag(scope)"
+                    @mouseup="endDrag(scope.$index)"
                   ></el-input> </template
               ></el-table-column>
               <el-table-column
                 show-overflow-tooltip="true"
                 sortable
-                fixed="right"
                 prop="productionTime"
                 label="生产时间"
-                width="220px"
+                width="120px"
                 ><template #default="scope">
                   <el-input
                     v-model="scope.row.productionTime"
@@ -284,11 +267,34 @@
                   ></el-input> </template
               ></el-table-column>
               <el-table-column
+                show-overflow-tooltip="true"
+                prop="remark"
+                label="备注"
+                width="120px"
+                ><template #default="scope">
+                  <el-input
+                    v-model="scope.row.remark"
+                    placeholder="备注"
+                  ></el-input> </template
+              ></el-table-column>
+              <el-table-column
+                show-overflow-tooltip="true"
+                prop="specification"
+                label="规格"
+                width="280px"
+                ><template #default="scope">
+                  <el-input
+                    v-model="scope.row.specification"
+                    placeholder="请输入规格"
+                  ></el-input> </template
+              ></el-table-column>
+
+              <el-table-column
                 #default="scope"
                 fixed="right"
                 prop="operatorId"
                 label="操作"
-                width="120px"
+                width="60px"
               >
                 <el-popconfirm
                   confirm-button-text="Yes"
@@ -307,9 +313,8 @@
             </el-table>
           </div>
         </el-main>
-        <el-divider />
         <el-footer>
-          <div class="watermark">@宁波时代仪表</div>
+          <div class="watermark">©宁波时代仪表</div>
         </el-footer>
       </el-container>
     </el-container>
@@ -334,6 +339,7 @@ import {
   DArrowLeft,
   Setting,
 } from "@element-plus/icons-vue";
+import { ElMessage } from 'element-plus'
 import axios from "axios";
 const username = ref(""); // Replace with the actual usernamet
 const packIndex = ref(); // 当前pack 序列号
@@ -343,6 +349,17 @@ const Median: Ref<number> = ref(0); // 提供初始值为 0
 const tableData = ref<Form[]>([]);
 const tableNumberInput = ref<HTMLInputElement | null>(null);
 const packData = ref<PackForm[]>([]);
+
+const boxOrWorkerInput = ref<HTMLInputElement | null>(null);
+const startRowIndex = ref<number | null>(null);
+const isDragging = ref(false);
+const copiedText = ref(""); // 用于存储复制的文本
+
+const startRowIndex1 = ref<number | null>(null);
+const isDragging1 = ref(false);
+const copiedText1 = ref(""); // 用于存储复制的文本
+const copiedTextOrigin = ref(""); // 用于存储复制的文本
+
 username.value = route.query.key ? route.query.key.toString() : "";
 interface PackForm {
   id?: number;
@@ -410,15 +427,14 @@ const saveOrderInfo = async () => {
         });
         selectedItem.value = "scanBox";
         getPackingInfo();
-      } else
-        ElNotification({
-          title: "Error",
-          message: "保存失败",
-          type: "error",
-        });
+      }
     })
     .catch((error: any) => {
-      console.log("error", error);
+      ElNotification({
+        title: "Error",
+        message: error,
+        type: "error",
+      });
     });
 };
 const onSubmit = async () => {
@@ -445,7 +461,11 @@ const onSubmit = async () => {
         });
     })
     .catch((error: any) => {
-      console.log("error", error);
+      ElNotification({
+        title: "Error",
+        message: error,
+        type: "error",
+      });
     });
 };
 const cacelSubmit = () => {
@@ -528,37 +548,42 @@ const exportExcel = () => {
     });
 };
 const deleteRow = (index: number) => {
-  axios
-    .get("/api/delete", {
-      params: {
-        username: username.value,
-        id: tableData.value[index].id,
-      },
-    })
-    .then((response: { data: any }) => {
-      if (response.data.code === 200) {
+  // 若 该条数据尚未保存 则删除显示即可
+  if (tableData.value[index].id == null) {
+    tableData.value.splice(index, 1);
+  } else {
+    axios
+      .get("/api/delete", {
+        params: {
+          username: username.value,
+          id: tableData.value[index].id,
+        },
+      })
+      .then((response: { data: any }) => {
+        if (response.data.code === 200) {
+          ElNotification({
+            title: "Success",
+            message: "删除成功",
+            type: "success",
+          });
+          tableData.value.splice(index, 1);
+          getPackingInfo();
+        } else {
+          ElNotification({
+            title: "Error",
+            message: "删除失败",
+            type: "error",
+          });
+        }
+      })
+      .catch((error: any) => {
         ElNotification({
-          title: "Success",
-          message: "删除成功",
-          type: "success",
+          title: "Warning",
+          message: error,
+          type: "warning",
         });
-        tableData.value.splice(index, 1);
-        getPackingInfo();
-      } else {
-        ElNotification({
-          title: "Error",
-          message: "删除失败",
-          type: "error",
-        });
-      }
-    })
-    .catch((error: any) => {
-      ElNotification({
-        title: "Warning",
-        message: "系统资源请求错误",
-        type: "warning",
       });
-    });
+  }
 };
 const deleteRow2 = async (index: number) => {
   axios
@@ -588,7 +613,7 @@ const deleteRow2 = async (index: number) => {
     .catch((error: any) => {
       ElNotification({
         title: "Warning",
-        message: "系统资源请求错误",
+        message: error,
         type: "warning",
       });
     });
@@ -706,6 +731,78 @@ const addRow = (rowData: Form, index: number) => {
     }
   });
 };
+const startDragLeft = (scope: any) => {
+  startRowIndex.value = scope.$index;
+  isDragging.value = true;
+  copiedText.value = scope.row.boxOrWorkerNumber;
+  const count = tableData.value.reduce((init, item) => {
+    if (item.boxOrWorkerNumber === copiedText.value) return init + 1;
+    return init;
+  }, 0);
+  ElNotification({
+    title: '箱号数量',
+    message: `${count}`,
+    duration: 2000,
+    position: 'bottom-left',
+  })
+};
+
+const startDragMiddle = (scope: any) => {
+  startRowIndex1.value = scope.$index;
+  isDragging1.value = true;
+  copiedTextOrigin.value = scope.row.boxOrWorkerNumber;
+};
+
+const handleDrag = (scope: any) => {
+  if (isDragging.value) {
+    boxOrWorkerInput.value = scope.$index;
+    const currentIndex = boxOrWorkerInput.value;
+    if (
+      currentIndex !== null &&
+      startRowIndex.value !== null &&
+      +currentIndex !== startRowIndex.value
+    ) {
+      const startIndex = Math.min(startRowIndex.value, +currentIndex);
+      const endIndex = Math.max(startRowIndex.value, +currentIndex);
+      for (let i = startIndex; i <= endIndex; i++) {
+        tableData.value[i].boxOrWorkerNumber = copiedText.value;
+      }
+    }
+  }
+  if (isDragging1.value) {
+    boxOrWorkerInput.value = scope.$index;
+    const currentIndex = boxOrWorkerInput.value;
+    if (
+      currentIndex !== null &&
+      startRowIndex1.value !== null &&
+      +currentIndex !== startRowIndex1.value
+    ) {
+      const startIndex = Math.min(startRowIndex1.value, +currentIndex);
+      const endIndex = Math.max(startRowIndex1.value, +currentIndex);
+      for (let i = startIndex + 1; i <= endIndex; i++) {
+        let arr = copiedTextOrigin.value.split("-");
+        let lastNumber = Number(arr[arr.length - 1]) + 1;
+        arr[arr.length - 1] = lastNumber.toString();
+        let finish = arr.join("-");
+        copiedText1.value = finish;
+        tableData.value[i].boxOrWorkerNumber = copiedText1.value;
+      }
+    }
+  }
+};
+const endDrag = (endIndex: number) => {
+  if (isDragging.value) {
+    startRowIndex.value = null;
+    isDragging.value = false;
+    copiedText.value = "";
+  }
+  if (isDragging1.value) {
+    startRowIndex1.value = null;
+    isDragging1.value = false;
+    copiedText1.value = "";
+    copiedTextOrigin.value = "";
+  }
+};
 </script>
 <style>
 .el-menu-vertical-demo:not(.el-menu--collapse) {
@@ -734,5 +831,8 @@ const addRow = (rowData: Form, index: number) => {
   color: #000;
   font-size: 20px;
   z-index: 9999;
+}
+.el-table__body-wrapper::-webkit-scrollbar {
+  width: 20px;
 }
 </style>
