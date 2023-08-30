@@ -252,7 +252,7 @@
                     @keyup.down="startDragMiddle(scope)"
                     @mousemove="handleDrag(scope)"
                     @mouseup="endDrag(scope.$index)"
-                  ></el-input> </template
+                  ></el-input></template
               ></el-table-column>
               <el-table-column
                 show-overflow-tooltip="true"
