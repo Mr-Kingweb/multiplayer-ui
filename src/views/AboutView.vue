@@ -17,20 +17,19 @@
       <!-- 右侧，退出登录和设置图标 -->
       <div style="margin-right: 20px; display: flex; align-items: center">
         <!-- Logout button -->
-        <el-button @click="exportExcel" style="margin-right: 20px" round>
+        <el-button @click="exportExcel" style="margin-right: 20px" v-show="username==='何绍钦'" round>
           <el-icon>
-            <Upload/>
+            <Upload />
           </el-icon>
           数据导出
-        </el-button
-        >
-        <el-button @click="logout" type="text"
-        ><span style="font-size: 20px">退出登录</span></el-button
+        </el-button>
+        <el-button @click="logout" link
+          ><span style="font-size: 20px">退出登录</span></el-button
         >
         <!-- Settings icon -->
       </div>
     </el-header>
-    <el-divider/>
+    <el-divider />
     <el-container>
       <el-aside>
         <div style="display: flex; flex-direction: column">
@@ -38,19 +37,15 @@
             v-model="isCollapse"
             style="margin-left: 20px; margin-bottom: 20px"
           >
-            <el-radio-button :label="false"
-            >
+            <el-radio-button :label="false">
               <el-icon>
-                <DArrowRight/>
-              </el-icon
-              >
+                <DArrowRight />
+              </el-icon>
             </el-radio-button>
-            <el-radio-button :label="true"
-            >
+            <el-radio-button :label="true">
               <el-icon>
-                <DArrowLeft/>
-              </el-icon
-              >
+                <DArrowLeft />
+              </el-icon>
             </el-radio-button>
           </el-radio-group>
           <el-menu
@@ -62,19 +57,17 @@
             <el-sub-menu index="1">
               <template #title>
                 <el-icon>
-                  <location/>
+                  <location />
                 </el-icon>
                 <span>功能板块</span>
               </template>
               <el-menu-item-group>
                 <el-menu-item index="1-1" @click="selectedItem = 'scanBox'"
-                >扫码装箱
-                </el-menu-item
-                >
+                  >扫码装箱
+                </el-menu-item>
                 <el-menu-item index="1-2" @click="selectedItem = 'checkRecord'"
-                >装箱单号
-                </el-menu-item
-                >
+                  >装箱单号
+                </el-menu-item>
               </el-menu-item-group>
             </el-sub-menu>
           </el-menu>
@@ -91,43 +84,43 @@
           <div v-if="selectedItem === 'scanBox'">
             <div style="display: flex; align-items: center">
               <el-button type="primary" size="large" @click="insertPack" plain
-              >添加装箱
-              </el-button
-              >
+                >添加装箱
+              </el-button>
             </div>
 
             <!-- 扫码装箱的内容 -->
             <el-table
               :data="packData"
               style="width: 100%; height: calc(100vh - 210px)"
-              fit="false"
-              stripe="true"
+              :fit="true"
+              :stripe="true"
             >
               <!--数据筛选 条件在表格里实现；实现数据操作（删除，编辑 ，保存数据）  -->
+
               <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 sortable
                 fixed
-                prop="id"
+                type="index"
                 label="序号"
-              >
-              </el-table-column>
+                width="100"
+              ></el-table-column>
               <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 sortable
                 prop="deviceCount"
                 label="设备数量"
               >
               </el-table-column>
               <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 sortable
                 prop="operatorId"
                 label="操作人员"
               >
               </el-table-column>
               <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 sortable
                 fixed="right"
                 prop="packingTime"
@@ -158,7 +151,7 @@
                   @cancel="cancelEvent"
                 >
                   <template #reference>
-                    <el-button type="danger" :icon="Delete" circle/>
+                    <el-button type="danger" :icon="Delete" circle />
                   </template>
                 </el-popconfirm>
               </el-table-column>
@@ -173,25 +166,25 @@
                 size="large"
                 @click="saveOrderInfo"
                 plain
-              >保存
-              </el-button
-              >
+                >保存
+              </el-button>
             </div>
             <!-- 检测记录的内容 -->
             <el-table
               :data="tableData"
               style="width: 100%; height: calc(100vh - 210px)"
-              fit="false"
-              stripe="true"
+              :fit="true"
+              :stripe="true"
             >
+
               <!--数据筛选 条件在表格里实现；实现数据操作（删除，编辑 ，保存数据）  -->
               <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 sortable
                 fixed
                 prop="orderNumber"
                 label="订单单号"
-                width="220px"
+                width="205px"
               >
                 <template #default="scope">
                   <el-input
@@ -201,24 +194,24 @@
                 </template>
               </el-table-column>
               <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 sortable
                 prop="customerNumber"
                 label="客户号"
-                width="100px"
+                width="90px"
               >
                 <template #default="scope">
                   <el-input
                     v-model="scope.row.customerNumber"
-                    placeholder="客户号"
+                    placeholder=""
                   ></el-input>
                 </template>
               </el-table-column>
               <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 prop="brand"
                 label="品名"
-                width="250px"
+                width="150px"
               >
                 <template #default="scope">
                   <el-input
@@ -228,7 +221,7 @@
                 </template>
               </el-table-column>
               <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 sortable
                 prop="quantity"
                 label="数量"
@@ -239,48 +232,36 @@
                     v-model="scope.row.quantity"
                     placeholder="请输入数量"
                   ></el-input>
-                </template
-                >
+                </template>
               </el-table-column>
               <el-table-column
-                show-overflow-tooltip="true"
-                sortable
-                prop="tableNumber"
-                label="表号"
-                width="220px"
+                :show-overflow-tooltip="true"
+                prop="remark"
+                label="备注"
+                width="110px"
               >
                 <template #default="scope">
                   <el-input
-                    v-model="scope.row.tableNumber"
-                    placeholder="请输入表号"
-                    ref="tableNumberInput"
-                    @keyup.enter="addRow(scope.row, scope.$index)"
+                    v-model="scope.row.remark"
+                    placeholder="备注"
                   ></el-input>
-                </template
-                >
+                </template>
               </el-table-column>
               <el-table-column
-                show-overflow-tooltip="true"
-                sortable
-                prop="boxOrWorkerNumber"
-                label="箱号/工号"
-                width="220px"
+                :show-overflow-tooltip="true"
+                prop="specification"
+                label="规格"
+                width="210px"
               >
                 <template #default="scope">
                   <el-input
-                    v-model="scope.row.boxOrWorkerNumber"
-                    placeholder="请输入箱号/工号"
-                    ref="boxOrWorkerInput"
-                    @mousedown.left="startDragLeft(scope)"
-                    @keyup.down="startDragMiddle(scope)"
-                    @mousemove="handleDrag(scope)"
-                    @mouseup="endDrag(scope.$index)"
+                    v-model="scope.row.specification"
+                    placeholder="请输入规格"
                   ></el-input>
-                </template
-                >
+                </template>
               </el-table-column>
               <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 sortable
                 prop="productionTime"
                 label="生产时间"
@@ -291,38 +272,53 @@
                     v-model="scope.row.productionTime"
                     placeholder="请输入生产时间"
                   ></el-input>
-                </template
-                >
-              </el-table-column>
-              <el-table-column
-                show-overflow-tooltip="true"
-                prop="remark"
-                label="备注"
-                width="120px"
-              >
-                <template #default="scope">
-                  <el-input
-                    v-model="scope.row.remark"
-                    placeholder="备注"
-                  ></el-input>
-                </template
-                >
-              </el-table-column>
-              <el-table-column
-                show-overflow-tooltip="true"
-                prop="specification"
-                label="规格"
-                width="280px"
-              >
-                <template #default="scope">
-                  <el-input
-                    v-model="scope.row.specification"
-                    placeholder="请输入规格"
-                  ></el-input>
-                </template
-                >
+                </template>
               </el-table-column>
 
+              <el-table-column
+                :show-overflow-tooltip="true"
+                sortable
+                prop="tableNumber"
+                label="表号"
+                width="170px"
+              >
+                <template #default="scope">
+                  <el-input
+                    v-model="scope.row.tableNumber"
+                    placeholder="请输入表号"
+                    ref="tableNumberInput"
+                    @keyup.enter="addRow(scope.row, scope.$index)"
+                  ></el-input>
+                </template>
+              </el-table-column>
+              <el-table-column type="index" label="序" width="50">
+              </el-table-column>
+              <el-table-column
+                :show-overflow-tooltip="true"
+                sortable
+                prop="boxOrWorkerNumber"
+                label="箱号/工号"
+                width="150px"
+              >
+                <template #default="scope">
+                  <!-- <el-tooltip
+                    class="box-item"
+                    effect="dark"
+                    :content="`${countL}`"
+                    placement="right"
+                  > -->
+                    <el-input
+                      v-model="scope.row.boxOrWorkerNumber"
+                      placeholder="输入箱号/工号"
+                      ref="boxOrWorkerInput"
+                      @mousedown.left="startDragLeft(scope)"
+                      @keyup.down="startDragMiddle(scope)"
+                      @mousemove="handleDrag(scope)"
+                      @mouseup="endDrag(scope.$index)"
+                    ></el-input>
+                  <!-- </el-tooltip> -->
+                </template>
+              </el-table-column>
               <el-table-column
                 #default="scope"
                 fixed="right"
@@ -340,7 +336,7 @@
                   @cancel="cancelEvent"
                 >
                   <template #reference>
-                    <el-button type="danger" :icon="Delete" circle/>
+                    <el-button type="danger" :icon="Delete" circle />
                   </template>
                 </el-popconfirm>
               </el-table-column>
@@ -356,13 +352,13 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, ref, reactive, Ref, nextTick} from "vue";
+import { computed, ref, reactive, Ref, nextTick } from "vue";
 import router from "../router/index";
-import {ElNotification, ElMessageBox} from "element-plus";
-import {useRoute} from "vue-router";
+import { ElNotification, ElMessageBox } from "element-plus";
+import { useRoute } from "vue-router";
 import moment from "moment";
-import {onMounted} from "vue";
-import {Edit, Delete} from "@element-plus/icons-vue";
+import { onMounted } from "vue";
+import { Edit, Delete } from "@element-plus/icons-vue";
 import {
   Menu as IconMenu,
   Location,
@@ -373,7 +369,7 @@ import {
   DArrowLeft,
   Setting,
 } from "@element-plus/icons-vue";
-import {ElMessage} from 'element-plus'
+import { ElMessage } from "element-plus";
 import axios from "axios";
 
 const username = ref(""); // Replace with the actual usernamet
@@ -394,7 +390,8 @@ const startRowIndex1 = ref<number | null>(null);
 const isDragging1 = ref(false);
 const copiedText1 = ref(""); // 用于存储复制的文本
 const copiedTextOrigin = ref(""); // 用于存储复制的文本
-
+const countL = ref<number | null>(null);
+const middle = ref(0);
 username.value = route.query.key ? route.query.key.toString() : "";
 
 interface PackForm {
@@ -445,8 +442,6 @@ const backPack = () => {
   selectedItem.value = "scanBox";
 };
 const saveOrderInfo = async () => {
-  console.log("tableData.value", tableData.value);
-
   const url = "/api/update";
   const data = {
     operatorId: packIndex.value,
@@ -475,42 +470,11 @@ const saveOrderInfo = async () => {
       });
     });
 };
-const onSubmit = async () => {
-  form.productionTime = new Date();
-  const url = "/api/insertData";
-  const data = {
-    orderInfo: form,
-    username: username.value,
-  };
-  await axios
-    .post(url, data)
-    .then((response: { data: any }) => {
-      if (response.data.code === 200)
-        ElNotification({
-          title: "Success",
-          message: "创建成功",
-          type: "success",
-        });
-      else
-        ElNotification({
-          title: "Error",
-          message: "创建失败",
-          type: "error",
-        });
-    })
-    .catch((error: any) => {
-      ElNotification({
-        title: "Error",
-        message: error,
-        type: "error",
-      });
-    });
-};
+
 const cacelSubmit = () => {
   selectedItem.value = "checkRecord";
 };
-const cancelEvent = () => {
-};
+const cancelEvent = () => {};
 // Function to handle logout
 onMounted(async () => {
   getPackingInfo();
@@ -523,7 +487,6 @@ const getPackingInfo = async () => {
       },
     })
     .then((response: { data: any }) => {
-      console.log("response.data", response.data);
       packData.value = response.data.map((item: any) => {
         const date = new Date(item.packingTime.replace("T", " "));
         item.packingTime = formatter(date);
@@ -564,12 +527,11 @@ const exportExcel = () => {
     .then((response: { data: Blob; headers: { [x: string]: any } }) => {
       // 创建一个 blob 对象 URL，然后通过 link 下载
       const url = window.URL.createObjectURL(
-        new Blob([response.data], {type: "application/vnd.ms-excel"})
+        new Blob([response.data], { type: "application/vnd.ms-excel" })
       );
       const link = document.createElement("a");
       link.href = url;
       const contentDisposition = response.headers["content-disposition"];
-      console.log("contentDisposition", contentDisposition);
       let fileName = "数据";
       if (contentDisposition) {
         fileName = window.decodeURIComponent(contentDisposition.split("=")[1]);
@@ -582,9 +544,7 @@ const exportExcel = () => {
       link.click();
       link.remove();
     })
-    .catch((error: any) => {
-      console.log("error", error);
-    });
+    .catch((error: any) => {});
 };
 const deleteRow = (index: number) => {
   // 若 该条数据尚未保存 则删除显示即可
@@ -658,8 +618,6 @@ const deleteRow2 = async (index: number) => {
     });
 };
 const logout = async () => {
-  // Your logout logic here
-  console.log("log.this.$route.query", route);
   const param = route.query.key;
   if (typeof param === "string") window.sessionStorage.removeItem(param);
   // 跳转到首页页面
@@ -673,20 +631,13 @@ const logout = async () => {
   });
 };
 const isCollapse = ref(false);
-const handleOpen = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath);
-};
-const handleClose = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath);
-};
+const handleOpen = (key: string, keyPath: string[]) => {};
+const handleClose = (key: string, keyPath: string[]) => {};
 const greeting = computed(() => {
   const hour = new Date().getHours();
   return hour < 12 ? "上午好，" : "下午好，";
 });
-const openSettings = () => {
-  // Your settings icon click logic here
-  console.log("Settings icon clicked");
-};
+const openSettings = () => {};
 const insertPack = async () => {
   const data: PackForm = {
     deviceCount: 0,
@@ -697,25 +648,9 @@ const insertPack = async () => {
   await axios
     .post("/api/pack/insertData", data)
     .then((response: { data: any }) => {
-      console.log("response", response);
       getPackingInfo();
-      // tableData.value = response.data.body.data.map((item: any) => {
-      //   const date = new Date(item.productionTime.replace("T", " "));
-      //   item.productionTime = formatter(date);
-      //   return item;
-      // });
-      // 处理后端返回的数据...
     })
-    .catch((error: any) => {
-      console.error("POST请求失败", error);
-      // 处理请求失败的情况...
-    });
-  // packData.value.push({
-  //   id: 6,
-  //   deviceCount: 5,
-  //   operatorId: "joker",
-  //   packingTime: new Date(),
-  // });
+    .catch((error: any) => {});
 };
 // 编辑
 const open1 = async (index: number) => {
@@ -746,18 +681,13 @@ const open1 = async (index: number) => {
           return item;
         });
         selectedItem.value = "checkRecord";
-        console.log("tableData.value", tableData.value);
-        // 处理后端返回的数据...
       })
-      .catch((error: any) => {
-        console.error("POST请求失败", error);
-        // 处理请求失败的情况...
-      });
+      .catch((error: any) => {});
   }
 };
 const addRow = (rowData: Form, index: number) => {
   // 创建一个新的对象，复制 rowData 的所有字段
-  let newRow = {...rowData};
+  let newRow = { ...rowData };
   // 清空新行的表号
   newRow.tableNumber = "";
   newRow.id = null;
@@ -779,13 +709,12 @@ const startDragLeft = (scope: any) => {
     return init;
   }, 0);
   ElNotification({
-    title: '箱号数量',
+    title: "箱号数量",
     message: `${count}`,
     duration: 2000,
-    position: 'bottom-left',
-  })
+    position: "bottom-left",
+  });
 };
-
 const startDragMiddle = (scope: any) => {
   startRowIndex1.value = scope.$index;
   isDragging1.value = true;
@@ -793,6 +722,15 @@ const startDragMiddle = (scope: any) => {
 };
 
 const handleDrag = (scope: any) => {
+  middle.value = scope.$index;
+  countL.value = tableData.value.reduce((init, item) => {
+    if (
+      item.boxOrWorkerNumber === tableData.value[middle.value].boxOrWorkerNumber
+    ) {
+      return init + 1;
+    }
+    return init;
+  }, 0);
   if (isDragging.value) {
     boxOrWorkerInput.value = scope.$index;
     const currentIndex = boxOrWorkerInput.value;
