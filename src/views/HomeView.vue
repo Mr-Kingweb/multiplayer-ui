@@ -64,6 +64,7 @@ export default {
               title: "成功",
               message: "登录成功",
               type: "success",
+              duration:600
             });
             window.sessionStorage.setItem(form.username, form.username);
             router.push({

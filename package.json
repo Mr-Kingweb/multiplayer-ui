@@ -14,7 +14,9 @@
     "moment": "^2.29.4",
     "vue": "^3.2.13",
     "vue-class-component": "^8.0.0-0",
+    "vue-composition-api": "^0.0.1",
     "vue-router": "^4.0.3",
+    "vue-virtual-scroller": "^2.0.0-beta.8",
     "vuex": "^4.0.0"
   },
   "devDependencies": {
@@ -23,6 +25,7 @@
     "@vue/cli-plugin-typescript": "~5.0.0",
     "@vue/cli-plugin-vuex": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "compression-webpack-plugin": "^10.0.0",
     "less": "^4.2.0",
     "less-loader": "^8.1.1",
     "typescript": "~4.5.5",

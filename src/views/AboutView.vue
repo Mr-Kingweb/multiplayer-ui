@@ -1,4 +1,49 @@
 <template>
+  <el-drawer
+    v-model="drawer"
+    direction="ttb"
+    :before-close="handleClose1"
+    size="550"
+    :with-header="false"
+  >
+    <div class="drawer-content">
+      <h3>操作说明：</h3>
+      <ul class="custom-list">
+        <li>
+          每个人根据自己的账号工号进行登录，分为管理员和用户两种角色，不同角色功能不一样，管理员有导出总数据以及检索数据条件的功能权限
+        </li>
+        <li>
+          每个人在自己界面只能看到自己的装箱记录，切勿登录其他人账号进行操作，后台有检测记录
+        </li>
+        <li>
+          未确保数据不被误删，页面没有添加支持多项装箱记录删除的功能，并且单项删除也要进行确认操作
+        </li>
+        <li>
+          界面左侧可根据屏幕大小进行伸缩条件，后面卡槽为后续补用功能留空间
+        </li>
+      </ul>
+
+      <hr />
+
+      <h3>EXCEL数据复制功能：</h3>
+      <ul class="custom-list">
+        <li>
+          页面支持 EXCEL
+          数据复制到页面的功能；数据需包括六列数据（订单单号，客户号，品名，数量，规格，备注），在每行数据的首个列进行粘贴复制。如果数据为空，忽略。
+        </li>
+        <li>不需要一直操作的列数据会进行输入框的隐藏，以提高性能。</li>
+        <li>
+          在编辑装箱内容时，按住鼠标左键往下拉表号输入框，复制该表号输入框的值到鼠标光标停止的表号输入框中，所有行信息也会一律复制下来。扫码枪默认执行回车操作，因此按回车也可复制该行信息，表号内容会被清零，其余内容不变。
+        </li>
+        <li>当需要对表内容进行修改时，点击表号内容即可进行修改。</li>
+        <li>
+          在编辑箱号/工号操作时，鼠标点击需要执行+1操作的输入框，按一下键盘的“↓”下键，鼠标移动到对应数量的表号/工号输入框即可进行+1操作。这两个操作也可以反向执行。
+        </li>
+        <li>在装箱完毕确认无误后，点击保存即可，显示保存成功，则装箱成功。</li>
+      </ul>
+    </div>
+  </el-drawer>
+
   <el-container class="container-full-height">
     <el-header
       style="
@@ -16,8 +61,16 @@
 
       <!-- 右侧，退出登录和设置图标 -->
       <div style="margin-right: 20px; display: flex; align-items: center">
+        <el-button style="margin-right: 30px" @click="drawer = true"
+          ><span style="font-size: 20px">说明文档</span></el-button
+        >
         <!-- Logout button -->
-        <el-button @click="exportExcel" style="margin-right: 20px" v-show="username==='何绍钦'" round>
+        <el-button
+          @click="exportExcel"
+          style="margin-right: 20px"
+          v-show="username === '何绍钦'"
+          round
+        >
           <el-icon>
             <Upload />
           </el-icon>
@@ -88,7 +141,6 @@
               </el-button>
             </div>
 
-            <!-- 扫码装箱的内容 -->
             <el-table
               :data="packData"
               style="width: 100%; height: calc(100vh - 210px)"
@@ -98,29 +150,17 @@
               <!--数据筛选 条件在表格里实现；实现数据操作（删除，编辑 ，保存数据）  -->
 
               <el-table-column
-                :show-overflow-tooltip="true"
                 sortable
                 fixed
                 type="index"
                 label="序号"
                 width="100"
               ></el-table-column>
-              <el-table-column
-                :show-overflow-tooltip="true"
-                sortable
-                prop="deviceCount"
-                label="设备数量"
-              >
+              <el-table-column sortable prop="deviceCount" label="设备数量">
+              </el-table-column>
+              <el-table-column sortable prop="operatorId" label="操作人员">
               </el-table-column>
               <el-table-column
-                :show-overflow-tooltip="true"
-                sortable
-                prop="operatorId"
-                label="操作人员"
-              >
-              </el-table-column>
-              <el-table-column
-                :show-overflow-tooltip="true"
                 sortable
                 fixed="right"
                 prop="packingTime"
@@ -156,6 +196,7 @@
                 </el-popconfirm>
               </el-table-column>
             </el-table>
+            <!-- 扫码装箱的内容 -->
           </div>
 
           <div v-if="selectedItem === 'checkRecord'">
@@ -169,132 +210,181 @@
                 >保存
               </el-button>
             </div>
-            <!-- 检测记录的内容 -->
             <el-table
               :data="tableData"
               style="width: 100%; height: calc(100vh - 210px)"
               :fit="true"
               :stripe="true"
+              v-loading="loading"
+              :element-loading-svg="svg"
+              class="custom-loading-svg"
+              element-loading-svg-view-box="-10, -10, 50, 50"
+              row-key="id"
+              :max-height="calcTableHeight"
             >
-
               <!--数据筛选 条件在表格里实现；实现数据操作（删除，编辑 ，保存数据）  -->
               <el-table-column
-                :show-overflow-tooltip="true"
                 sortable
                 fixed
                 prop="orderNumber"
                 label="订单单号"
                 width="205px"
+                show-overflow-tooltip="true"
               >
                 <template #default="scope">
-                  <el-input
-                    v-model="scope.row.orderNumber"
-                    placeholder="请输入订单单号"
-                  ></el-input>
+                  <div
+                    @click="handleClick(scope.$index, scope.column.property)"
+                  >
+                    <span v-if="!isEditing">{{ scope.row.orderNumber }}</span>
+
+                    <el-input
+                      @blur="handleBlur"
+                      v-else
+                      v-model="scope.row.orderNumber"
+                      @input="handleInput(scope.$index, $event)"
+                      placeholder="请输入订单单号"
+                    ></el-input>
+                  </div>
                 </template>
               </el-table-column>
               <el-table-column
-                :show-overflow-tooltip="true"
                 sortable
                 prop="customerNumber"
                 label="客户号"
                 width="90px"
+                show-overflow-tooltip="true"
               >
                 <template #default="scope">
-                  <el-input
-                    v-model="scope.row.customerNumber"
-                    placeholder=""
-                  ></el-input>
+                  <div
+                    @click="handleClick(scope.$index, scope.column.property)"
+                  >
+                    <span v-if="!isEditing">{{
+                      scope.row.customerNumber
+                    }}</span>
+                    <el-input
+                      @blur="handleBlur"
+                      v-else
+                      v-model="scope.row.customerNumber"
+                    ></el-input>
+                  </div>
                 </template>
               </el-table-column>
               <el-table-column
-                :show-overflow-tooltip="true"
                 prop="brand"
                 label="品名"
                 width="150px"
+                show-overflow-tooltip="true"
               >
                 <template #default="scope">
-                  <el-input
-                    v-model="scope.row.brand"
-                    placeholder="请输入品名"
-                  ></el-input>
+                  <div
+                    @click="handleClick(scope.$index, scope.column.property)"
+                  >
+                    <span v-if="!isEditing">{{ scope.row.brand }}</span>
+                    <el-input
+                      @blur="handleBlur"
+                      v-else
+                      v-model="scope.row.brand"
+                      placeholder="请输入品名"
+                    ></el-input>
+                  </div>
                 </template>
               </el-table-column>
               <el-table-column
-                :show-overflow-tooltip="true"
                 sortable
                 prop="quantity"
                 label="数量"
                 width="88px"
               >
                 <template #default="scope">
-                  <el-input
-                    v-model="scope.row.quantity"
-                    placeholder="请输入数量"
-                  ></el-input>
-                </template>
-              </el-table-column>
-              <el-table-column
-                :show-overflow-tooltip="true"
-                prop="remark"
-                label="备注"
-                width="110px"
-              >
-                <template #default="scope">
-                  <el-input
-                    v-model="scope.row.remark"
-                    placeholder="备注"
-                  ></el-input>
-                </template>
-              </el-table-column>
-              <el-table-column
-                :show-overflow-tooltip="true"
-                prop="specification"
-                label="规格"
-                width="210px"
-              >
-                <template #default="scope">
-                  <el-input
-                    v-model="scope.row.specification"
-                    placeholder="请输入规格"
-                  ></el-input>
-                </template>
-              </el-table-column>
-              <el-table-column
-                :show-overflow-tooltip="true"
-                sortable
-                prop="productionTime"
-                label="生产时间"
-                width="120px"
-              >
-                <template #default="scope">
-                  <el-input
-                    v-model="scope.row.productionTime"
-                    placeholder="请输入生产时间"
-                  ></el-input>
+                  <div
+                    @click="handleClick(scope.$index, scope.column.property)"
+                  >
+                    <span v-if="!isEditing">{{ scope.row.quantity }}</span>
+                    <el-input
+                      @blur="handleBlur"
+                      v-else
+                      v-model="scope.row.quantity"
+                      placeholder="请输入数量"
+                    ></el-input>
+                  </div>
                 </template>
               </el-table-column>
 
               <el-table-column
-                :show-overflow-tooltip="true"
+                prop="specification"
+                label="规格"
+                width="210px"
+                show-overflow-tooltip="true"
+              >
+                <template #default="scope">
+                  <div
+                    @click="handleClick(scope.$index, scope.column.property)"
+                  >
+                    <span v-if="!isEditing">{{ scope.row.specification }}</span>
+                    <el-input
+                      @blur="handleBlur"
+                      v-else
+                      v-model="scope.row.specification"
+                      placeholder="请输入规格"
+                    ></el-input>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="remark"
+                label="备注"
+                width="110px"
+                show-overflow-tooltip="true"
+              >
+                <template #default="scope">
+                  <div
+                    @click="handleClick(scope.$index, scope.column.property)"
+                  >
+                    <span v-if="!isEditing">{{ scope.row.remark }}</span>
+                    <el-input
+                      @blur="handleBlur"
+                      v-else
+                      v-model="scope.row.remark"
+                      placeholder="备注"
+                    ></el-input>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column
+                sortable
+                prop="productionTime"
+                label="生产时间"
+                width="110px"
+                :formatter="formatProductionTime"
+              >
+              </el-table-column>
+
+              <el-table-column
                 sortable
                 prop="tableNumber"
                 label="表号"
                 width="170px"
               >
                 <template #default="scope">
+                  <span
+                    v-if="!scope.row.isEditing1"
+                    @click="startEditing(scope.$index)"
+                  >
+                    {{ scope.row.tableNumber }}
+                  </span>
                   <el-input
+                    v-else
                     v-model="scope.row.tableNumber"
                     placeholder="请输入表号"
                     ref="tableNumberInput"
                     @keyup.enter="addRow(scope.row, scope.$index)"
+                    @blur="endEditing(scope.$index)"
                   ></el-input>
                 </template>
               </el-table-column>
               <el-table-column type="index" label="序" width="50">
               </el-table-column>
               <el-table-column
-                :show-overflow-tooltip="true"
                 sortable
                 prop="boxOrWorkerNumber"
                 label="箱号/工号"
@@ -307,15 +397,15 @@
                     :content="`${countL}`"
                     placement="right"
                   > -->
-                    <el-input
-                      v-model="scope.row.boxOrWorkerNumber"
-                      placeholder="输入箱号/工号"
-                      ref="boxOrWorkerInput"
-                      @mousedown.left="startDragLeft(scope)"
-                      @keyup.down="startDragMiddle(scope)"
-                      @mousemove="handleDrag(scope)"
-                      @mouseup="endDrag(scope.$index)"
-                    ></el-input>
+                  <el-input
+                    v-model="scope.row.boxOrWorkerNumber"
+                    placeholder="输入箱号/工号"
+                    ref="boxOrWorkerInput"
+                    @mousedown.left="startDragLeft(scope)"
+                    @keyup.down="startDragMiddle(scope)"
+                    @mousemove="handleDrag(scope)"
+                    @mouseup="endDrag(scope.$index)"
+                  ></el-input>
                   <!-- </el-tooltip> -->
                 </template>
               </el-table-column>
@@ -358,6 +448,7 @@ import { ElNotification, ElMessageBox } from "element-plus";
 import { useRoute } from "vue-router";
 import moment from "moment";
 import { onMounted } from "vue";
+import { useMemo } from "vue-composition-api";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import {
   Menu as IconMenu,
@@ -371,12 +462,20 @@ import {
 } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import axios from "axios";
-
+const svg = `
+        <path class="path" d="
+          M 30 15
+          L 28 17
+          M 25.61 25.61
+          A 15 15, 0, 0, 1, 15 30
+          A 15 15, 0, 1, 1, 27.99 7.5
+          L 15 15
+        " style="stroke-width: 4px; fill: rgba(0, 0, 0, 0)"/>
+      `;
 const username = ref(""); // Replace with the actual usernamet
 const packIndex = ref(); // 当前pack 序列号
 const selectedItem = ref("scanBox"); // Replace with the actual username
 const route = useRoute();
-const Median: Ref<number> = ref(0); // 提供初始值为 0
 const tableData = ref<Form[]>([]);
 const tableNumberInput = ref<HTMLInputElement | null>(null);
 const packData = ref<PackForm[]>([]);
@@ -385,13 +484,17 @@ const boxOrWorkerInput = ref<HTMLInputElement | null>(null);
 const startRowIndex = ref<number | null>(null);
 const isDragging = ref(false);
 const copiedText = ref(""); // 用于存储复制的文本
-
+const loading = ref(false);
 const startRowIndex1 = ref<number | null>(null);
 const isDragging1 = ref(false);
 const copiedText1 = ref(""); // 用于存储复制的文本
 const copiedTextOrigin = ref(""); // 用于存储复制的文本
 const countL = ref<number | null>(null);
 const middle = ref(0);
+
+const isEditing = ref(false);
+const activeColumn = ref("");
+const drawer = ref(false);
 username.value = route.query.key ? route.query.key.toString() : "";
 
 interface PackForm {
@@ -413,29 +516,8 @@ interface Form {
   id?: null | number;
   operatorId?: null | number;
   productionTime?: Date; // 添加 productionTime 属性的类型定义
+  isEditing1?: boolean;
 }
-
-const formBp: Form = {
-  orderNumber: "",
-  customerNumber: "",
-  brand: "",
-  quantity: 0,
-  specification: "",
-  remark: "",
-  tableNumber: "",
-  boxOrWorkerNumber: "",
-};
-const form: Form = reactive({
-  orderNumber: "",
-  customerNumber: "",
-  brand: "",
-  quantity: 0,
-  specification: "",
-  remark: "",
-  tableNumber: "",
-  boxOrWorkerNumber: "",
-  productionTime: new Date(),
-});
 
 const backPack = () => {
   tableData.value = [];
@@ -457,6 +539,7 @@ const saveOrderInfo = async () => {
           title: "Success",
           message: "保存成功",
           type: "success",
+          duration: 500,
         });
         selectedItem.value = "scanBox";
         getPackingInfo();
@@ -471,9 +554,6 @@ const saveOrderInfo = async () => {
     });
 };
 
-const cacelSubmit = () => {
-  selectedItem.value = "checkRecord";
-};
 const cancelEvent = () => {};
 // Function to handle logout
 onMounted(async () => {
@@ -564,6 +644,7 @@ const deleteRow = (index: number) => {
             title: "Success",
             message: "删除成功",
             type: "success",
+            duration: 500,
           });
           tableData.value.splice(index, 1);
           getPackingInfo();
@@ -572,6 +653,7 @@ const deleteRow = (index: number) => {
             title: "Error",
             message: "删除失败",
             type: "error",
+            duration: 500,
           });
         }
       })
@@ -598,6 +680,7 @@ const deleteRow2 = async (index: number) => {
           title: "Success",
           message: "删除成功",
           type: "success",
+          duration: 500,
         });
         packData.value.splice(index, 1);
         getPackingInfo();
@@ -614,6 +697,7 @@ const deleteRow2 = async (index: number) => {
         title: "Warning",
         message: error,
         type: "warning",
+        duration: 500,
       });
     });
 };
@@ -628,6 +712,7 @@ const logout = async () => {
     title: "Success",
     message: "注销成功",
     type: "success",
+    duration: 500,
   });
 };
 const isCollapse = ref(false);
@@ -650,23 +735,40 @@ const insertPack = async () => {
     .then((response: { data: any }) => {
       getPackingInfo();
     })
-    .catch((error: any) => {});
+    .catch((error: any) => {
+      console.log("jokerVue", error);
+    });
 };
 // 编辑
 const open1 = async (index: number) => {
-  packIndex.value = packData.value[index].id;
+  loading.value = true;
+  tableData.value = [];
   // packData.value[index].id
   // getByOperatorId
+  packIndex.value = packData.value[index].id;
   if (packData.value[index].deviceCount === 0) {
-    let newRow: Form = formBp;
+    let newRow1: Form = {
+      orderNumber: "",
+      customerNumber: "",
+      brand: "",
+      quantity: 0,
+      specification: "",
+      remark: "",
+      tableNumber: "",
+      boxOrWorkerNumber: "",
+      isEditing1: true,
+    };
     // 清空新行的表号
-    newRow.id = null;
-    newRow.operatorId = packData.value[index].id;
-    newRow.productionTime = moment().format("YYYY-MM-DD HH:mm:ss.SSS");
+    newRow1.id = null;
+    newRow1.operatorId = packData.value[index].id;
+    newRow1.productionTime = moment().format("YYYY-MM-DD HH:mm:ss.SSS");
     // 将新行添加到表格数据中
-    tableData.value.push(newRow);
+    tableData.value.push(newRow1);
+    loading.value = false;
     selectedItem.value = "checkRecord";
+    isEditing.value = true;
   } else {
+    isEditing.value = false;
     await axios
       .get("/api/getByOperatorId", {
         params: {
@@ -681,25 +783,14 @@ const open1 = async (index: number) => {
           return item;
         });
         selectedItem.value = "checkRecord";
+        loading.value = false;
       })
-      .catch((error: any) => {});
+      .catch((error: any) => {
+        loading.value = false;
+      });
   }
 };
-const addRow = (rowData: Form, index: number) => {
-  // 创建一个新的对象，复制 rowData 的所有字段
-  let newRow = { ...rowData };
-  // 清空新行的表号
-  newRow.tableNumber = "";
-  newRow.id = null;
-  // 将新行添加到表格数据中
-  tableData.value.push(newRow);
-  nextTick(() => {
-    // 将光标设置到新行的表号输入框中
-    if (tableNumberInput.value !== null) {
-      tableNumberInput.value.focus();
-    }
-  });
-};
+
 const startDragLeft = (scope: any) => {
   startRowIndex.value = scope.$index;
   isDragging.value = true;
@@ -711,7 +802,7 @@ const startDragLeft = (scope: any) => {
   ElNotification({
     title: "箱号数量",
     message: `${count}`,
-    duration: 2000,
+    duration: 500,
     position: "bottom-left",
   });
 };
@@ -780,6 +871,79 @@ const endDrag = (endIndex: number) => {
     copiedTextOrigin.value = "";
   }
 };
+const calcTableHeight = () => {
+  // 根据页面高度和其他元素高度来计算表格的最大高度
+  return window.innerHeight - 300;
+};
+const formatProductionTime = (row: any) => {
+  // 使用正则表达式提取日期部分 "2023-08-31"，忽略后面的时间部分
+  const datePart = row.productionTime.match(/\d{4}-\d{2}-\d{2}/)[0];
+  return datePart;
+};
+
+const handleClick = (row: any, columnProperty: any) => {
+  activeColumn.value = columnProperty;
+  isEditing.value = true;
+};
+
+const handleBlur = () => {
+  activeColumn.value = "";
+  isEditing.value = false;
+};
+
+// const isEditableColumn = (columnProperty: any) => {
+//   // 在这里添加条件来检查列是否可编辑
+//   const editableColumns = [
+//     "orderNumber",
+//     "customerNumber",
+//     "brand",
+//     "quantity",
+//     "specification",
+//     "remark",
+//   ];
+//   return editableColumns.includes(columnProperty);
+// };
+
+const handleInput = (row: any, newValue: any) => {
+  if (newValue.includes("	")) {
+    const data = newValue.split("	");
+    tableData.value[row].orderNumber = data[0];
+    tableData.value[row].customerNumber = data[1];
+    tableData.value[row].brand = data[2];
+    tableData.value[row].quantity = data[3];
+    tableData.value[row].specification = data[4];
+    tableData.value[row].remark = data[5];
+  }
+};
+const addRow = (rowData: Form, index: number) => {
+  // 使用 useMemo 缓存表格数据
+
+  // 创建一个新的对象，复制 rowData 的所有字段
+  let newRow = { ...rowData };
+  newRow.tableNumber = "";
+  newRow.id = null;
+  // 将新行添加到表格数据中
+  tableData.value.push(newRow);
+  nextTick(() => {
+    // 将光标设置到新行的表号输入框中
+    if (tableNumberInput.value !== null) {
+      tableNumberInput.value.focus();
+    }
+  });
+};
+const startEditing = (row: any) => {
+  // 开始编辑，设置标志位
+
+  tableData.value[row].isEditing1 = true;
+};
+const endEditing = (row: any) => {
+  // 结束编辑，清除标志位
+
+  tableData.value[row].isEditing1 = false;
+};
+const handleClose1 = (done: () => void) => {
+  done();
+};
 </script>
 <style>
 .el-menu-vertical-demo:not(.el-menu--collapse) {
@@ -814,4 +978,26 @@ const endDrag = (endIndex: number) => {
 .el-table__body-wrapper::-webkit-scrollbar {
   width: 20px;
 }
+.el-table__body-wrapper {
+  /* 调整滚动速度，你可以根据需要调整这个值 */
+  scroll-behavior: smooth !important;
+  scroll-snap-type: y mandatory !important;
+  /* 控制滚动速度 */
+  scroll-snap-points-y: repeat(100px) !important; /* 增加这个值以减慢滚动速度 */
+  /* 控制滚动速度 */
+  overscroll-behavior-y: contain !important;
+}
+.example-showcase .el-loading-mask {
+  z-index: 9;
+}
+.drawer-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+
+
 </style>
