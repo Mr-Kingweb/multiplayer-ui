@@ -156,22 +156,28 @@
                 label="序号"
                 width="100"
               ></el-table-column>
-              <el-table-column sortable prop="deviceCount" label="设备数量">
+              <el-table-column
+                sortable
+                prop="deviceCount"
+                key="deviceCount"
+                label="设备数量"
+              >
               </el-table-column>
-              <el-table-column sortable prop="operatorId" label="操作人员">
+              <el-table-column
+                sortable
+                prop="operatorId"
+                key="operatorId"
+                label="操作人员"
+              >
               </el-table-column>
               <el-table-column
                 sortable
                 fixed="right"
                 prop="packingTime"
                 label="生产时间"
+                key="packingTime"
               ></el-table-column>
-              <el-table-column
-                #default="scope"
-                fixed="right"
-                prop=""
-                label="操作"
-              >
+              <el-table-column #default="scope" fixed="right" label="操作">
                 <!-- 编辑 -->
                 <el-button
                   type="primary"
@@ -179,6 +185,8 @@
                   :icon="Edit"
                   @click="open1(scope.$index)"
                   circle
+                  row-key="id"
+                  :max-height="calcTableHeight"
                 />
 
                 <el-popconfirm
@@ -209,9 +217,46 @@
                 plain
                 >保存
               </el-button>
+              <el-input
+                @input="handleInput($event)"
+                v-model="newData1[0].orderNumber"
+                style="margin-left: 20px"
+                placeholder="请输入订单单号"
+              ></el-input>
+              <el-input
+                v-model="newData1[0].customerNumber"
+                style="margin-left: 20px"
+                placeholder="请输入客户号"
+              ></el-input>
+              <el-input
+                v-model="newData1[0].brand"
+                style="margin-left: 20px"
+                placeholder="请输入品名"
+              ></el-input>
+              <el-input
+                v-model="newData1[0].quantity"
+                style="margin-left: 20px"
+                placeholder="请输入数量"
+              ></el-input>
+              <el-input
+                v-model="newData1[0].specification"
+                style="margin-left: 20px"
+                placeholder="请输入规格"
+              ></el-input>
+              <el-input
+                v-model="newData1[0].remark"
+                style="margin-left: 20px; margin-right: 20px"
+                placeholder="请输入备注"
+              ></el-input>
+              <el-button
+                type="danger"
+                :icon="Delete"
+                @click="delete1111"
+                plain
+              />
             </div>
             <el-table
-              :data="tableData"
+              :data="newData"
               style="width: 100%; height: calc(100vh - 210px)"
               :fit="true"
               :stripe="true"
@@ -219,176 +264,44 @@
               :element-loading-svg="svg"
               class="custom-loading-svg"
               element-loading-svg-view-box="-10, -10, 50, 50"
-              row-key="id"
+              row-key="productionTime"
               :max-height="calcTableHeight"
             >
               <!--数据筛选 条件在表格里实现；实现数据操作（删除，编辑 ，保存数据）  -->
-              <el-table-column
-                sortable
-                fixed
-                prop="orderNumber"
-                label="订单单号"
-                width="205px"
-                show-overflow-tooltip="true"
-              >
-                <template #default="scope">
-                  <div
-                    @click="handleClick(scope.$index, scope.column.property)"
-                  >
-                    <span v-if="!isEditing">{{ scope.row.orderNumber }}</span>
-
-                    <el-input
-                      @blur="handleBlur"
-                      v-else
-                      v-model="scope.row.orderNumber"
-                      @input="handleInput(scope.$index, $event)"
-                      placeholder="请输入订单单号"
-                    ></el-input>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                sortable
-                prop="customerNumber"
-                label="客户号"
-                width="90px"
-                show-overflow-tooltip="true"
-              >
-                <template #default="scope">
-                  <div
-                    @click="handleClick(scope.$index, scope.column.property)"
-                  >
-                    <span v-if="!isEditing">{{
-                      scope.row.customerNumber
-                    }}</span>
-                    <el-input
-                      @blur="handleBlur"
-                      v-else
-                      v-model="scope.row.customerNumber"
-                    ></el-input>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                prop="brand"
-                label="品名"
-                width="150px"
-                show-overflow-tooltip="true"
-              >
-                <template #default="scope">
-                  <div
-                    @click="handleClick(scope.$index, scope.column.property)"
-                  >
-                    <span v-if="!isEditing">{{ scope.row.brand }}</span>
-                    <el-input
-                      @blur="handleBlur"
-                      v-else
-                      v-model="scope.row.brand"
-                      placeholder="请输入品名"
-                    ></el-input>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                sortable
-                prop="quantity"
-                label="数量"
-                width="88px"
-              >
-                <template #default="scope">
-                  <div
-                    @click="handleClick(scope.$index, scope.column.property)"
-                  >
-                    <span v-if="!isEditing">{{ scope.row.quantity }}</span>
-                    <el-input
-                      @blur="handleBlur"
-                      v-else
-                      v-model="scope.row.quantity"
-                      placeholder="请输入数量"
-                    ></el-input>
-                  </div>
-                </template>
-              </el-table-column>
 
               <el-table-column
-                prop="specification"
-                label="规格"
-                width="210px"
-                show-overflow-tooltip="true"
-              >
-                <template #default="scope">
-                  <div
-                    @click="handleClick(scope.$index, scope.column.property)"
-                  >
-                    <span v-if="!isEditing">{{ scope.row.specification }}</span>
-                    <el-input
-                      @blur="handleBlur"
-                      v-else
-                      v-model="scope.row.specification"
-                      placeholder="请输入规格"
-                    ></el-input>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                prop="remark"
-                label="备注"
-                width="110px"
-                show-overflow-tooltip="true"
-              >
-                <template #default="scope">
-                  <div
-                    @click="handleClick(scope.$index, scope.column.property)"
-                  >
-                    <span v-if="!isEditing">{{ scope.row.remark }}</span>
-                    <el-input
-                      @blur="handleBlur"
-                      v-else
-                      v-model="scope.row.remark"
-                      placeholder="备注"
-                    ></el-input>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
+                v-if="false"
                 sortable
                 prop="productionTime"
+                key="productionTime"
                 label="生产时间"
-                width="110px"
-                :formatter="formatProductionTime"
+                show-overflow-tooltip="true"
               >
               </el-table-column>
 
-              <el-table-column
-                sortable
-                prop="tableNumber"
-                label="表号"
-                width="170px"
-              >
+              <el-table-column sortable prop="tableNumber" label="表号">
                 <template #default="scope">
-                  <span
-                    v-if="!scope.row.isEditing1"
-                    @click="startEditing(scope.$index)"
-                  >
-                    {{ scope.row.tableNumber }}
-                  </span>
-                  <el-input
-                    v-else
-                    v-model="scope.row.tableNumber"
-                    placeholder="请输入表号"
-                    ref="tableNumberInput"
-                    @keyup.enter="addRow(scope.row, scope.$index)"
-                    @blur="endEditing(scope.$index)"
-                  ></el-input>
+                  <div @click="startEditing(scope.$index)">
+                    <span v-if="!scope.row.isEditing1">
+                      {{ scope.row.tableNumber }}
+                    </span>
+                    <el-input
+                      v-else
+                      v-model="scope.row.tableNumber"
+                      placeholder="请输入表号"
+                      ref="tableNumberInput"
+                      @keyup.enter="addRow(scope.row)"
+                      @blur="endEditing(scope.$index)"
+                    ></el-input>
+                  </div>
                 </template>
               </el-table-column>
-              <el-table-column type="index" label="序" width="50">
+              <el-table-column type="index" label="序号" width="100">
               </el-table-column>
               <el-table-column
                 sortable
                 prop="boxOrWorkerNumber"
                 label="箱号/工号"
-                width="150px"
               >
                 <template #default="scope">
                   <!-- <el-tooltip
@@ -410,8 +323,8 @@
                 </template>
               </el-table-column>
               <el-table-column
+                v-if="isDelete"
                 #default="scope"
-                fixed="right"
                 prop="operatorId"
                 label="操作"
                 width="60px"
@@ -443,6 +356,7 @@
 
 <script lang="ts" setup>
 import { computed, ref, reactive, Ref, nextTick } from "vue";
+import { RecycleScroller } from "vue-virtual-scroller";
 import router from "../router/index";
 import { ElNotification, ElMessageBox } from "element-plus";
 import { useRoute } from "vue-router";
@@ -477,9 +391,11 @@ const packIndex = ref(); // 当前pack 序列号
 const selectedItem = ref("scanBox"); // Replace with the actual username
 const route = useRoute();
 const tableData = ref<Form[]>([]);
+const newData = ref<Form[]>([]);
+const newData1 = ref<Form2[]>([]);
 const tableNumberInput = ref<HTMLInputElement | null>(null);
 const packData = ref<PackForm[]>([]);
-
+const isDelete = ref(false);
 const boxOrWorkerInput = ref<HTMLInputElement | null>(null);
 const startRowIndex = ref<number | null>(null);
 const isDragging = ref(false);
@@ -495,6 +411,7 @@ const middle = ref(0);
 const isEditing = ref(false);
 const activeColumn = ref("");
 const drawer = ref(false);
+
 username.value = route.query.key ? route.query.key.toString() : "";
 
 interface PackForm {
@@ -505,25 +422,48 @@ interface PackForm {
 }
 
 interface Form {
-  orderNumber: string;
-  customerNumber: string;
-  brand: string;
-  quantity: number | null;
-  specification: string;
-  remark: string;
-  tableNumber: string;
-  boxOrWorkerNumber: string;
+  orderNumber?: string;
+  customerNumber?: string;
+  brand?: string;
+  quantity?: number | null;
+  specification?: string;
+  remark?: string;
+  tableNumber?: string;
+  boxOrWorkerNumber?: string;
   id?: null | number;
   operatorId?: null | number;
   productionTime?: Date; // 添加 productionTime 属性的类型定义
   isEditing1?: boolean;
 }
-
+interface Form2 {
+  orderNumber?: string;
+  customerNumber?: string;
+  brand?: string;
+  quantity?: number | null;
+  specification?: string;
+  remark?: string;
+}
+const delete1111 = () => {
+  isDelete.value = !isDelete.value;
+};
 const backPack = () => {
+  newData1.value = [];
+  newData.value = [];
   tableData.value = [];
   selectedItem.value = "scanBox";
 };
 const saveOrderInfo = async () => {
+  tableData.value = [];
+  const middle = newData1.value[0];
+  for (let i = 1; i < newData.value.length; i++) {
+    newData1.value[i] = middle;
+  }
+  for (let i = 0; i < newData.value.length; i++) {
+    // todo 使用对象扩展运算符将newData1.value和newData.value的属性拼接到一个新的对象中
+    const mergedObject = { ...newData1.value[i], ...newData.value[i] };
+    // 将拼接后的对象添加到tableData.value中
+    tableData.value.push(mergedObject);
+  }
   const url = "/api/update";
   const data = {
     operatorId: packIndex.value,
@@ -533,16 +473,16 @@ const saveOrderInfo = async () => {
   await axios
     .post(url, data)
     .then((response: { data: any }) => {
-      console.log("data", response);
       if (response.data.code === 200) {
         ElNotification({
           title: "Success",
           message: "保存成功",
           type: "success",
-          duration: 500,
+          duration: 1000,
         });
         selectedItem.value = "scanBox";
         getPackingInfo();
+        newData1.value = [];
       }
     })
     .catch((error: any) => {
@@ -567,6 +507,7 @@ const getPackingInfo = async () => {
       },
     })
     .then((response: { data: any }) => {
+      console.log("response.data", response.data);
       packData.value = response.data.map((item: any) => {
         const date = new Date(item.packingTime.replace("T", " "));
         item.packingTime = formatter(date);
@@ -628,14 +569,14 @@ const exportExcel = () => {
 };
 const deleteRow = (index: number) => {
   // 若 该条数据尚未保存 则删除显示即可
-  if (tableData.value[index].id == null) {
-    tableData.value.splice(index, 1);
+  if (newData.value[index].id == null) {
+    newData.value.splice(index, 1);
   } else {
     axios
       .get("/api/delete", {
         params: {
           username: username.value,
-          id: tableData.value[index].id,
+          id: newData.value[index].id,
         },
       })
       .then((response: { data: any }) => {
@@ -646,7 +587,7 @@ const deleteRow = (index: number) => {
             type: "success",
             duration: 500,
           });
-          tableData.value.splice(index, 1);
+          newData.value.splice(index, 1);
           getPackingInfo();
         } else {
           ElNotification({
@@ -722,7 +663,6 @@ const greeting = computed(() => {
   const hour = new Date().getHours();
   return hour < 12 ? "上午好，" : "下午好，";
 });
-const openSettings = () => {};
 const insertPack = async () => {
   const data: PackForm = {
     deviceCount: 0,
@@ -742,19 +682,22 @@ const insertPack = async () => {
 // 编辑
 const open1 = async (index: number) => {
   loading.value = true;
+  newData.value = [];
   tableData.value = [];
+  newData1.value[0] = {
+    orderNumber: "",
+    customerNumber: "",
+    brand: "",
+    quantity: null,
+    specification: "",
+    remark: "",
+  };
   // packData.value[index].id
   // getByOperatorId
   packIndex.value = packData.value[index].id;
   if (packData.value[index].deviceCount === 0) {
     let newRow1: Form = {
-      orderNumber: "",
-      customerNumber: "",
-      brand: "",
-      quantity: 0,
-      specification: "",
-      remark: "",
-      tableNumber: "",
+      tableNumber: ".",
       boxOrWorkerNumber: "",
       isEditing1: true,
     };
@@ -763,7 +706,7 @@ const open1 = async (index: number) => {
     newRow1.operatorId = packData.value[index].id;
     newRow1.productionTime = moment().format("YYYY-MM-DD HH:mm:ss.SSS");
     // 将新行添加到表格数据中
-    tableData.value.push(newRow1);
+    newData.value.push(newRow1);
     loading.value = false;
     selectedItem.value = "checkRecord";
     isEditing.value = true;
@@ -777,11 +720,27 @@ const open1 = async (index: number) => {
         },
       })
       .then((response: { data: any }) => {
+        console.log("response.data.body.data", response.data.body.data);
         tableData.value = response.data.body.data.map((item: any) => {
           const date = new Date(item.productionTime.replace("T", " "));
           item.productionTime = formatter(date);
           return item;
         });
+        newData.value = tableData.value.map((item) => {
+          return {
+            id: item.id,
+            boxOrWorkerNumber: item.boxOrWorkerNumber,
+            operatorId: item.operatorId,
+            productionTime: item.productionTime,
+            tableNumber: item.tableNumber,
+          };
+        });
+        newData1.value[0].orderNumber = tableData.value[0].orderNumber;
+        newData1.value[0].customerNumber = tableData.value[0].customerNumber;
+        newData1.value[0].brand = tableData.value[0].brand;
+        newData1.value[0].quantity = tableData.value[0].quantity;
+        newData1.value[0].specification = tableData.value[0].specification;
+        newData1.value[0].remark = tableData.value[0].remark;
         selectedItem.value = "checkRecord";
         loading.value = false;
       })
@@ -795,7 +754,7 @@ const startDragLeft = (scope: any) => {
   startRowIndex.value = scope.$index;
   isDragging.value = true;
   copiedText.value = scope.row.boxOrWorkerNumber;
-  const count = tableData.value.reduce((init, item) => {
+  const count = newData.value.reduce((init, item) => {
     if (item.boxOrWorkerNumber === copiedText.value) return init + 1;
     return init;
   }, 0);
@@ -814,9 +773,9 @@ const startDragMiddle = (scope: any) => {
 
 const handleDrag = (scope: any) => {
   middle.value = scope.$index;
-  countL.value = tableData.value.reduce((init, item) => {
+  countL.value = newData.value.reduce((init, item) => {
     if (
-      item.boxOrWorkerNumber === tableData.value[middle.value].boxOrWorkerNumber
+      item.boxOrWorkerNumber === newData.value[middle.value].boxOrWorkerNumber
     ) {
       return init + 1;
     }
@@ -833,7 +792,7 @@ const handleDrag = (scope: any) => {
       const startIndex = Math.min(startRowIndex.value, +currentIndex);
       const endIndex = Math.max(startRowIndex.value, +currentIndex);
       for (let i = startIndex; i <= endIndex; i++) {
-        tableData.value[i].boxOrWorkerNumber = copiedText.value;
+        newData.value[i].boxOrWorkerNumber = copiedText.value;
       }
     }
   }
@@ -853,7 +812,7 @@ const handleDrag = (scope: any) => {
         arr[arr.length - 1] = lastNumber.toString();
         let finish = arr.join("-");
         copiedText1.value = finish;
-        tableData.value[i].boxOrWorkerNumber = copiedText1.value;
+        newData.value[i].boxOrWorkerNumber = copiedText1.value;
       }
     }
   }
@@ -873,57 +832,30 @@ const endDrag = (endIndex: number) => {
 };
 const calcTableHeight = () => {
   // 根据页面高度和其他元素高度来计算表格的最大高度
-  return window.innerHeight - 300;
-};
-const formatProductionTime = (row: any) => {
-  // 使用正则表达式提取日期部分 "2023-08-31"，忽略后面的时间部分
-  const datePart = row.productionTime.match(/\d{4}-\d{2}-\d{2}/)[0];
-  return datePart;
+  return window.innerHeight - 110;
 };
 
-const handleClick = (row: any, columnProperty: any) => {
-  activeColumn.value = columnProperty;
-  isEditing.value = true;
-};
-
-const handleBlur = () => {
-  activeColumn.value = "";
-  isEditing.value = false;
-};
-
-// const isEditableColumn = (columnProperty: any) => {
-//   // 在这里添加条件来检查列是否可编辑
-//   const editableColumns = [
-//     "orderNumber",
-//     "customerNumber",
-//     "brand",
-//     "quantity",
-//     "specification",
-//     "remark",
-//   ];
-//   return editableColumns.includes(columnProperty);
-// };
-
-const handleInput = (row: any, newValue: any) => {
+const handleInput = (newValue: any) => {
   if (newValue.includes("	")) {
     const data = newValue.split("	");
-    tableData.value[row].orderNumber = data[0];
-    tableData.value[row].customerNumber = data[1];
-    tableData.value[row].brand = data[2];
-    tableData.value[row].quantity = data[3];
-    tableData.value[row].specification = data[4];
-    tableData.value[row].remark = data[5];
+    newData1.value[0].orderNumber = data[0];
+    newData1.value[0].customerNumber = data[1];
+    newData1.value[0].brand = data[2];
+    newData1.value[0].quantity = data[3];
+    newData1.value[0].specification = data[4];
+    newData1.value[0].remark = data[5];
   }
 };
-const addRow = (rowData: Form, index: number) => {
+const addRow = (rowData: Form) => {
   // 使用 useMemo 缓存表格数据
-
   // 创建一个新的对象，复制 rowData 的所有字段
   let newRow = { ...rowData };
   newRow.tableNumber = "";
   newRow.id = null;
+  newRow.productionTime = moment().format("YYYY-MM-DD HH:mm:ss.SSS");
+
   // 将新行添加到表格数据中
-  tableData.value.push(newRow);
+  newData.value.push(newRow);
   nextTick(() => {
     // 将光标设置到新行的表号输入框中
     if (tableNumberInput.value !== null) {
@@ -934,12 +866,12 @@ const addRow = (rowData: Form, index: number) => {
 const startEditing = (row: any) => {
   // 开始编辑，设置标志位
 
-  tableData.value[row].isEditing1 = true;
+  newData.value[row].isEditing1 = true;
 };
 const endEditing = (row: any) => {
   // 结束编辑，清除标志位
 
-  tableData.value[row].isEditing1 = false;
+  newData.value[row].isEditing1 = false;
 };
 const handleClose1 = (done: () => void) => {
   done();
@@ -997,7 +929,4 @@ const handleClose1 = (done: () => void) => {
   align-items: center;
   height: 100%;
 }
-
-
-
 </style>

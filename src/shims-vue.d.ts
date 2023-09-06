@@ -7,3 +7,4 @@ declare module '*.vue' {
   declare module 'axios'
   declare module 'moment'
   declare module 'vue-composition-api'
+  declare module 'vue-virtual-scroller';

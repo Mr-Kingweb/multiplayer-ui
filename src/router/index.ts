@@ -8,11 +8,6 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import(/* webpackChunkName: "about" */ '../views/HomeView.vue')
   },
   {
-    path: '/joker',
-    name: 'joker',
-    component: () => import(/* webpackChunkName: "about" */ '../views/joker.vue')
-  },
-  {
     path: '/about',
     name: 'about',
     meta: {requiresAuth: true},
